@@ -1,15 +1,4 @@
 minip code:
-
-the python code for inserting information into the database:
-  import random
-  with open('C/:users/moshes z/Desktop/school/miniP/insertQuery.sql','w') as SQL_FILE:
-    for i in range(20000):
-      b1,b2 = random.sample(range(0,20000), 2)
-      SQL_file.write("INSERT INTO bmarcus.share_post(share_id,profile_id,post_id) VALUES ")
-      share_id = i
-      post_id = b1
-      profile_id = b2
-      SQL_file.write("(" + "'" + str(share_id) + "'" + "," + "'" str(post_id) +  "'" + "," + "'"  + str(profile_id) + "'" + ");\n")
       
 first sql query on the database calculates times shared:
   select bmarcus.share_post.post_id, count(*) as TimesShared 
