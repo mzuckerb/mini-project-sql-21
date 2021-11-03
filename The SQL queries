@@ -1,0 +1,162 @@
+minip code:
+
+the python code for inserting information into the database:
+  import random
+  with open('C/:users/moshes z/Desktop/school/miniP/insertQuery.sql','w') as SQL_FILE:
+    for i in range(20000):
+      b1,b2 = random.sample(range(0,20000), 2)
+      SQL_file.write("INSERT INTO bmarcus.share_post(share_id,profile_id,post_id) VALUES ")
+      share_id = i
+      post_id = b1
+      profile_id = b2
+      SQL_file.write("(" + "'" + str(share_id) + "'" + "," + "'" str(post_id) +  "'" + "," + "'"  + str(profile_id) + "'" + ");\n")
+      
+first sql query on the database calculates times shared:
+  select bmarcus.share_post.post_id, count(*) as TimesShared 
+  from bmarcus.share_post
+  group by bmarcus.share_post.post_id
+  Having count(*) > 4
+  order by TimesShared
+  
+second sql query:
+  select bmarcus.tag.post_id, count(*) as TimesTagged 
+  from bmarcus.tag
+  group by bmarcus.tag.post_id
+  having count(*) > 5
+  order by TimesTagged
+  
+third query:
+  select bmarcus.friends.friend_id2 as friendof5, 5 as myfriend
+  from bmarcus.friends
+  where bmarcus.friends.friend_id1 = 5
+  union
+  select bmarcus.friends.friend_id1, 5 as myfriend
+  from bmarcus.friends
+  where bmarcus.friends.friend_id2 = 5
+  
+fourth query:
+  select bmarcus.friends.friend_id1, count(*) as amountOFfriends
+  from bmarcus.friends
+  group by bmarcus.friends.friend_id1
+  order by amountOFfriends
+  
+fifth sql query(complex):
+  select bmarcus.share_post.post_id, count(*) as timesSharedandTagged
+  from bmarcus.share_post, bmarcus.tag
+  where bmarcus.share_post.post_id = bmarcus.tag.post_id
+  group by bmarcus.share_post.post_id
+  order by timesSharedandTagged
+  
+sixth sql query:
+  select bmarcus.share_post.profile_id, count(*) as TimesSharedTagged
+  from bmarcus.share_post, bmarcus.tag
+  where bmarcus.share_post.profile_id = bmarcus.tag.profile_id1
+  group by bmarcus.share_post.profile_id
+  order by TimesSharedTagged
+  
+seventh sql query:
+  select bmarcus.friends.friend_id1, bmarcus.friends.friend_id2, bmarcus.tag.post_id
+  from bmarcus.friends, bmarcus.tag
+  where bmarcus.tag.profile_id1 = bmarcus.friends.friend_id1 AND bmarcus.tag.profile_id2 = bmarcus.friends.friend_id2 
+  or
+  bmarcus.tag.profile_id2 = bmarcus.friends.friend_id1 AND bmarcus.tag.profile_id1 = bmarcus.friends.friend_id2
+  
+eigth sql query:
+  select s.profile_id
+  from bmarcus.share_post s, bmarcus.tag t
+  where s.profile_id=t.profile_id1 and s.post_id = t.post_id
+  
+ninth sql query:
+  select f.* 
+  from friends f, tag t1,tag t2
+  where f.friend_id1=t1.profile_id1 and f.friend_id2=t2.profile_id1 and t1.profile_id2 = t2.profile_id2
+  
+Indexing:
+
+index #1:
+  create index tag_postid_idx
+  on bmarcus.tag(post_id)
+  
+index #2:
+  create index share_post_postId_IDX on share_post(post_id)
+  
+index #3:
+  create index friends_friendsId1_idx
+  on friends(friend_id1)
+  
+post integration querys:
+first query:
+  select distinct F.* from afeder.profile F, bmarcus.tag T
+  where F.PROFILE_ID = T.PROFILE_ID2
+  
+second query:
+  select  distinct P.*,S.Share_Id from afeder.post P,  bmarcus.share_post S
+  where P.profile_id= S.PROFILE_ID
+third query:
+
+Views:
+
+First User view:
+  create view timesSharedandTagged_View as
+  select bmarcus.share_post.post_id, count(*) as timesSharedandTagged
+  from bmarcus.share_post, bmarcus.tag
+  where bmarcus.share_post.post_id = bmarcus.tag.post_id
+  group by bmarcus.share_post.post_id
+  order by timesSharedandTagged
+  
+Second User view:
+  create view myfriends_View as
+  select bmarcus.friends.*
+  from bmarcus.friends
+  where bmarcus.friends.friend_id1 =5 OR bmarcus.friends.friend_id2 = 5
+  
+First Admin view:
+  create view closefriends as
+  select bmarcus.friends.friend_id1, bmarcus.friends.friend_id2, bmarcus.tag.post_id
+  from bmarcus.friends, bmarcus.tag
+  where bmarcus.tag.profile_id1 = bmarcus.friends.friend_id1 AND bmarcus.tag.profile_id2 = bmarcus.friends.friend_id2 
+  or
+  bmarcus.tag.profile_id2 = bmarcus.friends.friend_id1 AND bmarcus.tag.profile_id1 = bmarcus.friends.friend_id2
+  
+Second admin view:
+  create view intresteduser as
+  select s.profile_id
+  from bmarcus.share_post s, bmarcus.tag t
+  where s.profile_id=t.profile_id1 and s.post_id = t.post_id
+  
+Functions:
+
+function #1:
+  create or replace function countShares(num number) return integer is
+  FunctionResult integer;
+   begin
+    select count(*) into FunctionResult
+    from bmarcus.share_post
+    where bmarcus.share_post.post_id = num;
+    return(FunctionResult);
+  end countShares;
+  
+function #2:
+  create or replace function checkFriends(num number) return integer is
+  FunctionResult integer;
+  begin
+    select count(*) into FunctionResult
+    from bmarcus.friends
+    where bmarcus.friends.friend_id1 = num;
+    return(FunctionResult);
+  end checkFriends;
+  
+Procedures:
+
+procedure #1:
+  create or replace procedure chechIfFriends(friendId1 integer,friendId2 integer) is
+  begin
+    delete from bmarcus.friends where bmarcus.friends.friend_id1 = friendId1 and bmarcus.friends.friend_id2 = friendId2;
+  end chechIfFriends;
+  
+procedure #2:
+  create or replace procedure updateTag(tagid integer,friendId2 integer) is
+  begin
+    update bmarcus.tag set bmarcus.tag.profile_id2 = friendId2
+    where   bmarcus.tag.tag_id =tagid;
+  end updateTag;
